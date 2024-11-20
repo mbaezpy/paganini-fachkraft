@@ -57,7 +57,12 @@ public class RouteListPrefab : MonoBehaviour
         ActivateStateView(LoadingState);
     }
 
-    public void AddItem(Way w)
+    /// <summary>
+    /// Add a new item to the list
+    /// </summary>
+    /// <param name="w"></param>
+    /// <param name="asRecording"></param>
+    public void AddItem(Way w, bool asRecording = false)
     {
 
         foreach (var route in w.Routes)
@@ -67,7 +72,13 @@ public class RouteListPrefab : MonoBehaviour
             RouteItemPrefab item = neu.GetComponent<RouteItemPrefab>();
             item.OnSelected = OnItemSelected;
             item.OnRouteEdit = OnItemEdit;
-            item.FillWayRoute(w, route);
+            if (asRecording){
+                item.FillRecordingData(w, route);
+            }
+            else {
+                item.FillWayRoute(w, route);
+            }
+            
 
             dataCount++;
         }        
@@ -96,7 +107,7 @@ public class RouteListPrefab : MonoBehaviour
         w.Routes = new List<Route>();
         w.Routes.Add(r);
 
-        this.AddItem(w);
+        this.AddItem(w, asRecording: true);
 
         dataCount++;
     }

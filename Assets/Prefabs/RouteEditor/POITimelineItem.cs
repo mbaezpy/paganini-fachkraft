@@ -78,8 +78,8 @@ public class POITimelineItem : MonoBehaviour
     }
 
     public void FillPathpoint(Pathpoint pathpoint, int index)
-    {
-        FillPathpointData(pathpoint);
+    {    
+        FillPathpointData(pathpoint);            
         PinTitle.text = "Pin " + index;
 
         LocationIcon.gameObject.SetActive(false);
@@ -87,7 +87,7 @@ public class POITimelineItem : MonoBehaviour
         RenderIrrelevant(pathpoint.RelevanceFeedback == Pathpoint.POIFeedback.No || pathpoint.CleaningFeedback == Pathpoint.POIFeedback.No);
         if (pathpoint.RelevanceFeedback != Pathpoint.POIFeedback.No && pathpoint.CleaningFeedback != Pathpoint.POIFeedback.No) {
             RenderCompletedIcon(true);
-        }
+        }        
 
         CurrentIndex = index;
     }
@@ -128,14 +128,17 @@ public class POITimelineItem : MonoBehaviour
         if (previewPhoto != null)
         {            
             RenderPicture(previewPhoto.Data.Photo);
+            NoData.SetActive(false);
         }
         else
         {
-            POIPhoto.gameObject.SetActive(false);
+            //POIPhoto.gameObject.SetActive(false);
+            NoData.SetActive(true);
         }
         
 
         // render description
+        PinSubtitle.text = "";
         if (pathpoint.Description!= null)
         {
             PinSubtitle.text = pathpoint.Description;
@@ -166,7 +169,7 @@ public class POITimelineItem : MonoBehaviour
         POIPhoto.color = irrelevant ? grayColor : Color.white;
 
         RemovedIcon.SetActive(irrelevant);
-        NoData.SetActive(!irrelevant);
+        //NoData.SetActive(!irrelevant);
         ReassuranceIcon.SetActive(!irrelevant);
         LandmarkIcon.SetActive(!irrelevant);
         EditIcon.SetActive(!irrelevant);

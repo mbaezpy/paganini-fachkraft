@@ -19,10 +19,11 @@ public class PhotoPicker : MonoBehaviour
     private string SourceFolderPath;
     private string SourceFolderPathName;    
 
-    public void PickUpFile()
+    public void PickUpImage()
     {
+        string[] fileTypes = new string[] { "image/*" };
         // Initiates the async file picking process
-        PickupFileAsync().ContinueWith(task =>
+        PickupFileAsync(fileTypes).ContinueWith(task =>
         {
             if (task.Exception != null)
             {
@@ -31,7 +32,20 @@ public class PhotoPicker : MonoBehaviour
         }, TaskScheduler.FromCurrentSynchronizationContext()); // Ensures errors are caught on the main thread
     }
 
- private async Task PickupFileAsync()
+    public void PickUpFile(string[] fileTypes)
+    {
+        // Initiates the async file picking process
+        PickupFileAsync(fileTypes).ContinueWith(task =>
+        {
+            if (task.Exception != null)
+            {
+                Debug.LogError("Error in picking file: " + task.Exception);
+            }
+        }, TaskScheduler.FromCurrentSynchronizationContext()); // Ensures errors are caught on the main thread
+    }
+
+
+    private async Task PickupFileAsync(string[] fileTypes)
     {
         // Request permission asynchronously
         NativeFilePicker.Permission permission = await NativeFilePicker.RequestPermissionAsync(readPermissionOnly: true);
@@ -44,7 +58,7 @@ public class PhotoPicker : MonoBehaviour
         }
 
         // File type filter for image files
-        string[] fileTypes = new string[] { "image/*" };
+        
         
         // Use a TaskCompletionSource to await the result from the picker
         var tcs = new TaskCompletionSource<string>();

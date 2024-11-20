@@ -47,13 +47,20 @@ public class PhotoElementPrefab : MonoBehaviour
         
     }
 
-    public void FillPhoto(PathpointPhoto p, bool enableSelection, int index)
+    public void FillPhoto(PathpointPhoto p, bool enableSelection, int index, bool displayFeedback = true)
     {
         RenderPicture(p.Data.Photo);
         CurrentPathpointPhoto = p;
         CurrentIndex = index;
 
+        Debug.Log("GameObject: "+ gameObject.name + " -  FillPhoto: " + p.Id + " -  CurrentIndex: "+ CurrentIndex + " - enableSelection: " + enableSelection + " - displayFeedback: " + displayFeedback);
+
         EnableSelection(enableSelection);
+
+        if (!displayFeedback)
+        {
+            return;
+        }
 
         // We de-select the pictures curated as 'deleted'
         SelectedToggle.isOn = p.CleaningFeedback != PathpointPhoto.PhotoFeedback.Delete;
@@ -117,7 +124,11 @@ public class PhotoElementPrefab : MonoBehaviour
         {
             OnPhotoOpened.Invoke(this);
         }
+        else {
+            Debug.Log("OnPhotoOpened is null");
+        }
 
+        Debug.Log("Photo opened name: " + gameObject.name);
         Debug.Log("Photo opened: " + CurrentPathpointPhoto.Id);
     }
 

@@ -56,13 +56,21 @@ public class RouteItemPrefab : MonoBehaviour
         
     }
 
+    /// <summary>
+    ///  Fill recording and training data
+    /// </summary>
+    /// <param name="way"></param>
+    /// <param name="route"></param>
     public void FillWayRoute(Way way, Route route)
     {
-        LandmarkIcon.LandmarkType startIcon = Enum.Parse<LandmarkIcon.LandmarkType>(way.StartType);
-        LandmarkIcon.LandmarkType destIcon = Enum.Parse<LandmarkIcon.LandmarkType>(way.DestinationType);
-        TitleCell.FillCell(route.Name, route.Status);
-        StartCell.FillCell(way.Start, startIcon);
-        DestinatitonCell.FillCell(way.Destination, destIcon);    
+        // LandmarkIcon.LandmarkType startIcon = Enum.Parse<LandmarkIcon.LandmarkType>(way.StartType);
+        // LandmarkIcon.LandmarkType destIcon = Enum.Parse<LandmarkIcon.LandmarkType>(way.DestinationType);
+        // TitleCell.FillCell(route.Name, route.Status);
+        // StartCell.FillCell(way.Start, startIcon);
+        // DestinatitonCell.FillCell(way.Destination, destIcon);    
+
+        // Fill basic recording data
+        FillRecordingData(way, route);
 
         // Enable relevant cells based on route status
         RecordingDateCell.gameObject.SetActive(route.Status != Route.RouteStatus.Training);
@@ -94,15 +102,36 @@ public class RouteItemPrefab : MonoBehaviour
 
                 NumWalksCell.FillCell("0");
                 ProgressCell.SetProgress(0);                
-
             }
         }
         else
         {
-            RecordingDateCell.FillCell(DateUtils.ConvertUTCToLocalString(route.Date, "HH:mm 'Uhr' - dd.MM.yyyy", CultureInfo.CurrentCulture));
+            //RecordingDateCell.FillCell(DateUtils.ConvertUTCToLocalString(route.Date, "HH:mm 'Uhr' - dd.MM.yyyy", CultureInfo.CurrentCulture));
             RawPanel.color = NotTrainingColor;
         }
 
+
+        // NewFlag.SetActive(!route.FromAPI);
+        // DraftFlag.SetActive(route.IsDraftUpdated == true);
+
+        // WayItem = way;
+        // RouteItem = route;
+    }
+
+
+    /// <summary>
+    /// Fill the recording data (ERW), based on the way and route
+    /// </summary>
+    /// <param name="way"></param>
+    /// <param name="route"></param>
+    public void FillRecordingData(Way way, Route route)
+    {
+        LandmarkIcon.LandmarkType startIcon = Enum.Parse<LandmarkIcon.LandmarkType>(way.StartType);
+        LandmarkIcon.LandmarkType destIcon = Enum.Parse<LandmarkIcon.LandmarkType>(way.DestinationType);
+        TitleCell.FillCell(route.Name, route.Status);
+        StartCell.FillCell(way.Start, startIcon);
+        DestinatitonCell.FillCell(way.Destination, destIcon); 
+        RecordingDateCell.FillCell(DateUtils.ConvertUTCToLocalString(route.Date, "HH:mm 'Uhr' - dd.MM.yyyy", CultureInfo.CurrentCulture));   
 
         NewFlag.SetActive(!route.FromAPI);
         DraftFlag.SetActive(route.IsDraftUpdated == true);
@@ -110,7 +139,6 @@ public class RouteItemPrefab : MonoBehaviour
         WayItem = way;
         RouteItem = route;
     }
-
 
     private void itemSelected()
     {
@@ -131,4 +159,10 @@ public class RouteItemPrefab : MonoBehaviour
 
         Debug.Log("Edit Item RouteItem " + RouteItem.Id);
     }    
+
+    void OnDestroy()
+    {
+        RouteButton.onClick.RemoveAllListeners();
+        RouteEditButton.onClick.RemoveAllListeners();
+    }
 }

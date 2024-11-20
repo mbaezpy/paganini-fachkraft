@@ -36,19 +36,39 @@ public class EditorHeader : MonoBehaviour
 
     void UpdateHeader() {
 
+        Route route = SharedData.CurrentRoute ?? AppState.CurrentRoute;
+
         HeaderText.text = "";
-        if (SharedData.CurrentRoute == null)
+        if (route == null)
         {
             return;
         }
 
-        HeaderText.text = SharedData.CurrentRoute.Name;
+        HeaderText.text = route.Name;
+        
+        string status = "";
+        if(route.Status == Route.RouteStatus.New){
+            status = "Cleaning";
+        }  
+        else if (route.Status == Route.RouteStatus.DraftPrepared)
+        {
+            status = "Discussion";
+        }
+        else if (route.Status == Route.RouteStatus.Training)
+        {
+            status = "Training";
+        }
+        else 
+        {
+            status = route.Status.ToString();
+        } 
+
 
         // activate the icon based on the status
         foreach (Transform child in StatusIconGroup.transform)
         {
             Toggle toggle = child.GetComponent<Toggle>();
-            if (toggle != null && toggle.name.Contains(SharedData.CurrentRoute.Status.ToString()))
+            if (toggle != null && toggle.name.Contains(status))
             {
                 toggle.isOn = true;
                 break;

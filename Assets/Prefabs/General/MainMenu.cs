@@ -73,7 +73,7 @@ public class MainMenu : MonoBehaviour
 
     private void UpdateSWProfile()
     {
-        if (gameObject.activeSelf) {
+        if (gameObject.activeInHierarchy) {
             PictureUtils.RenderPicture(SWPhoto, AppState.CurrentSocialWorker.Data.ProfilePic);
             SWName.text = AppState.CurrentSocialWorker.Data.Firstname + " " + AppState.CurrentSocialWorker.Data.Surname;
         }        

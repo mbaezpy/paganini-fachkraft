@@ -193,9 +193,7 @@ public class PinDetailsEdit : MonoBehaviour
         {
             ReadOnlyPanel.SetActive(true);
             POIReadOnlyFeedback.FillDiscussionFeedback(poi);
-        }
-
-        
+        }        
     }
 
 
@@ -238,9 +236,9 @@ public class PinDetailsEdit : MonoBehaviour
         //POIPhotoThumbnail.gameObject.SetActive(true);
 
 
-        POIPhotoThumbnail.FillPhoto(pathpointPhoto, false,0);
+        POIPhotoThumbnail.FillPhoto(pathpointPhoto, false,0, displayFeedback: false);
         POIPhotoThumbnail.gameObject.SetActive(true);
-        POIVideoThumbnail.FillPhoto(pathpointPhoto, false, 0);
+        POIVideoThumbnail.FillPhoto(pathpointPhoto, false, 0, displayFeedback: false);
         POIVideoThumbnail.gameObject.SetActive(true);
 
     }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 
 [System.Serializable]
@@ -16,8 +17,14 @@ public class PhotoGallery : MonoBehaviour
     public GameObject ItemPrefab;
     public GameObject BlankState;
     public TMPro.TMP_Text TitleText;
+    public Button AddPhotoButton;
+
+
+    [Header("Utility")]
+    public PhotoPicker PhotoFilePicker;
 
     private List<PathpointPhoto> CurrentPhotos;
+    private Pathpoint CurrentPathpoint;
     private RouteSharedData.EditorMode _editMode;
 
     [Header("Events")]
@@ -57,19 +64,15 @@ public class PhotoGallery : MonoBehaviour
         Clearlist();
 
         if (CurrentPhotos != null)
-            LoadPhotos(CurrentPhotos);
+            LoadPhotos(CurrentPhotos, CurrentPathpoint);
+
+        AddPhotoButton.gameObject.SetActive(EditMode == RouteSharedData.EditorMode.Cleaning || EditMode == RouteSharedData.EditorMode.Discussion);
     }
 
     // Update is called once per frame
     void Update()
     {
-        //if (ContentRectTransform.rect.height != CurrentContentHeight)
-        //{
-        //    CurrentContentHeight = ContentRectTransform.rect.height;
-        //    Debug.Log("Component size has changed: " + CurrentContentHeight);
 
-        //    ResizePanel();
-        //}
     }
 
 
@@ -92,10 +95,11 @@ public class PhotoGallery : MonoBehaviour
         }
     }
 
-    public void LoadPhotos(List<PathpointPhoto> photos)
+    public void LoadPhotos(List<PathpointPhoto> photos, Pathpoint pathpoint)
     {
         //fix: To safely load, due to problem with initialisation
         CurrentPhotos = photos;
+        CurrentPathpoint = pathpoint;
         if (!Content) return;
 
         int index = 0;
@@ -113,6 +117,13 @@ public class PhotoGallery : MonoBehaviour
         //TODO: Prepare the Gallery based on the EditMode
         // Edit during cleaning
         // Feedback during discussion
+    }
+
+    public void AddNewPhoto(){
+        // Change the profile picture
+        PhotoFilePicker.OnPhotoSelected.RemoveAllListeners();
+        PhotoFilePicker.OnPhotoSelected.AddListener(PhotoSelectedHandler);
+        PhotoFilePicker.PickUpImage();                    
     }
 
     public void AddItem(PathpointPhoto p, int index)
@@ -160,6 +171,41 @@ public class PhotoGallery : MonoBehaviour
         OnPhotoCurated?.Invoke();
     }
 
+    /// <summary>
+    /// Handle the photo selected event
+    /// </summary>
+    /// <param name="path">Path to the selected photo</param>
+    private void PhotoSelectedHandler(string path){
+        if (path != null) {
+            var picBytes = PictureUtils.LoadImageFile(path);
+             
+            // get ids
+            var lastPP = PathpointPhoto.GetWithMinId( p => p.Id);
+            int ppId = lastPP != null ? lastPP.Id - 1 : -1;   
+
+            var lastPD = PhotoData.GetWithMinId( p => p.Id);
+            int pdId = lastPD != null ? lastPD.Id - 1 : -1;            
+
+            // photo data
+            var photoData = new PhotoData();
+            photoData.Id = pdId; 
+            photoData.Photo = picBytes;            
+            photoData.InsertDirty();                             
+
+            // photo metadata
+            PathpointPhoto newPhoto = new PathpointPhoto();
+            newPhoto.Id = ppId;
+            newPhoto.PathpointId = CurrentPathpoint.Id;
+            newPhoto.Timestamp = DateUtils.UTCMilliseconds();
+            newPhoto.Data = photoData;
+            newPhoto.InsertDirty();
+
+            CurrentPhotos.Add(newPhoto);            
+            AddItem(newPhoto, CurrentPhotos.Count - 1);
+        }
+
+    }    
+
     public void CleanupView()
     {
         // Clear the list of photos and destroy instantiated items
@@ -170,6 +216,7 @@ public class PhotoGallery : MonoBehaviour
 
         // Reset the current photos
         CurrentPhotos = null;
+        CurrentPathpoint = null;
 
         // Optionally, you can also destroy the GameObject itself if it's no longer needed
         //Destroy(gameObject);

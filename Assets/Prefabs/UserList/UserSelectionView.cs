@@ -15,6 +15,7 @@ public class UserSelectionView : MonoBehaviour
 
     [Header("UI Components")]
     public GameObject UserListView; // The GameObject containing the user list.
+    public GameObject Loading;
     public TMPro.TMP_Text OrganisationTitle; // The TextMeshPro component displaying the organization title.
     private UserListPrefab UserList; // The component handling the user list logic.
 
@@ -33,13 +34,14 @@ public class UserSelectionView : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// This function initializes the user list view.
+    /// </summary>
     public void InitialiseView(){
         OrganisationTitle.text = AppState.CurrentSocialWorker.Data.AtWorkshop.Name;
         UserList = UserListView.GetComponent<UserListPrefab>();
-
-        PaganiniRestAPI.User.GetAll(GetUserSucceeded, GetUserFailed);
-        
-        UserList.Clearlist();
+        DisplayLoading(true);
+        PaganiniRestAPI.User.GetAll(GetUserSucceeded, GetUserFailed);                
     }
 
     /// <summary>
@@ -48,7 +50,9 @@ public class UserSelectionView : MonoBehaviour
     /// <param name="users">The list of users returned by the API.</param>
     private void GetUserSucceeded(UserAPIList users)
     {
-        UpdateLocalUserList(users);        
+        DisplayLoading(false);
+        UpdateLocalUserList(users);  
+        UserList.Clearlist();              
         DisplayUserList();    
     }
 
@@ -82,6 +86,15 @@ public class UserSelectionView : MonoBehaviour
     }    
 
     /// <summary>
+    /// This function displays the loading screen and hides the user list view.
+    /// </summary>
+    /// <param name="show">A boolean indicating whether to display the loading screen.</param>
+    private void DisplayLoading(bool show){
+        Loading.SetActive(show);
+        UserListView.SetActive(!show);
+    }
+
+    /// <summary>
     /// This function displays the user list in the user list view.
     /// </summary>
     private void DisplayUserList()
@@ -92,7 +105,7 @@ public class UserSelectionView : MonoBehaviour
         {
             UserList.AddItem(item);
         }        
-    }
+    }    
 
     /// <summary>
     /// This function is called when the GetAll method of the User class in the PaganiniRestAPI namespace fails.
@@ -100,7 +113,8 @@ public class UserSelectionView : MonoBehaviour
     /// <param name="errorMessage">The error message returned by the API.</param>
     private void GetUserFailed(string errorMessage)
     {
-
+        ToastMessageManager.Instance.Toast.RenderAlertToast("Fehler beim Anzeigen der Benutzer", 
+        "Überprüfen Sie die Internetverbindung und wenden Sie sich an den technischen Support, falls das Problem weiterhin besteht.");
     }
 
     /// <summary>

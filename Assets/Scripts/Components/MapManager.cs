@@ -7,38 +7,67 @@ using PaganiniRestAPI;
 using Unity.Entities.UniversalDelegates;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class MapManager : MonoBehaviour
+public class MapManager : MonoBehaviour, IMapSnapshotHandler
 {
     public GameObject MapContainer;
     public CanvasScaler ReferenceCanvasScaler;
     public Image MapSnapshot;
+    public GameObject LoadingAnimation;
+
+    public MapToolbar Toolbar;
 
     [Header("Route elements")]
     public Texture2D DefaultMarkerIcon;
     public Texture2D POILandmarkMarkerIcon;
     public Texture2D POIReassuranceMarkerIcon;
     public Color RouteColor;
+    public Color SelectedColor;
+    public Color DisableColor;
     
+    public UnityEvent<Pathpoint> OnPathpointSelected;
 
     //PRIVATE
     private static Texture2D ColoredMarkerIcon;
     private static Texture2D ScaledPOILandmarkMarkerIcon;
     private static Texture2D ScaledPOIReassuranceMarkerIcon;
 
+
+    private static Texture2D SelecteddMarkerIcon;
+    private static Texture2D SelectedPOILandmarkMarkerIcon;
+    private static Texture2D SelectedPOIReassuranceMarkerIcon;
+
+    private static Texture2D DeletedPOILandmarkMarkerIcon;
+    private static Texture2D DeletedPOIReassuranceMarkerIcon;    
+
+
     private Texture2D currentSnapshot;
     private Sprite currentSprite;
 
     private GoogleMapsView Map;
     private List<Pathpoint> PathpointList;
+    private Dictionary<string, Pathpoint> MarkerPathpoint;
+    private Dictionary<string, Marker> PathpointMarker;
     private RouteSharedData SharedData;
 
+    private Marker SelectedMarker;
+    private Pathpoint SelectedPathpoint;
+    private Marker DestinationMarker;
+    private Pathpoint DestinationPathpoint;
+
+    public bool EnableDestinationMarker {get; set;}
 
     // Start is called before the first frame update
     void Awake()
     {
-        SharedData = RouteSharedData.Instance;
+        SharedData = RouteSharedData.Instance;        
+    }
+
+    void Start()
+    {
+        Toolbar.Hide();
     }
 
     // Update is called once per frame
@@ -57,19 +86,30 @@ public class MapManager : MonoBehaviour
     /// <param name="pathpoints">Pathpoints to render in the map</param> 
     public void LoadMap()
     {
+        SharedData.CurrentPOI = null;
+
+        SelectedMarker = null;
+        DestinationMarker = null;
+
         PathpointList = SharedData.PathpointList;
         if (ColoredMarkerIcon == null)
         {
             ColoredMarkerIcon = ChangeIconColor(DefaultMarkerIcon, RouteColor);
             ScaledPOILandmarkMarkerIcon = ResizeTexture(POILandmarkMarkerIcon);
             ScaledPOIReassuranceMarkerIcon = ResizeTexture(POIReassuranceMarkerIcon);
+
+            SelecteddMarkerIcon = ChangeIconColor(DefaultMarkerIcon, SelectedColor);
+            SelectedPOILandmarkMarkerIcon = ChangeIconColor(ScaledPOILandmarkMarkerIcon, SelectedColor);
+            SelectedPOIReassuranceMarkerIcon = ChangeIconColor(ScaledPOIReassuranceMarkerIcon, SelectedColor);   
+
+            DeletedPOILandmarkMarkerIcon = ChangeIconColor(ScaledPOILandmarkMarkerIcon, DisableColor);
+            DeletedPOIReassuranceMarkerIcon = ChangeIconColor(ScaledPOIReassuranceMarkerIcon, DisableColor);                        
         }
 
         if (Map == null)
         {
             LoadMap(19);
         }
-        
     }
 
     /// <summary>
@@ -105,56 +145,153 @@ public class MapManager : MonoBehaviour
         Map.Clear();
     }
 
+    public void ToggleMapAsSnapshot(bool asSnapshot)
+    {
+        if (Map == null) return;
+        
+        if (asSnapshot)
+        {            
+            Map.TakeSnapshot(OnSnapshotReady);
+            Map.IsVisible = false;
+            MapSnapshot.sprite = currentSprite;
+        }
+        else
+        {
+            LoadingAnimation.SetActive(true);
+            Map.IsVisible = true;
+            MapSnapshot.sprite = null;
+        }
+            
+        
+    }
+
+
     public void DisplayMarkers(List<Pathpoint> pathpoints)
     {
         int i = 0;
+        int poiIndex = 0;
+        MarkerPathpoint = new Dictionary<string, Pathpoint>();
+        PathpointMarker = new Dictionary<string, Marker>();
 
         foreach (var pathpoint in pathpoints)
         {
             Debug.Log("DisplayMarkers: " + pathpoint.Id);
-            var icon = ColoredMarkerIcon;
+            var icon = GetPathpointIcon(pathpoint);
 
-            if (pathpoint.POIType == Pathpoint.POIsType.Point)
-            {
-                icon = ColoredMarkerIcon;
+            string title = "GPS Punkt " + i;
+            if (pathpoint.POIType == Pathpoint.POIsType.WayStart){
+                title = "Startpunkt";
             }
-            else if (pathpoint.POIType == Pathpoint.POIsType.Landmark)
-            {
-                icon = ScaledPOILandmarkMarkerIcon;
-            }               
-            else
-            {
-                icon = ScaledPOIReassuranceMarkerIcon;
+            else if (pathpoint.POIType == Pathpoint.POIsType.WayDestination){
+                title = "Zielpunkt";
+            }
+            else if (pathpoint.POIType != Pathpoint.POIsType.Point){
+                poiIndex++;
+                title = "Pin " + poiIndex;
             }
 
             var mo = new MarkerOptions()
                     .Position(new LatLng(pathpoint.Latitude, pathpoint.Longitude))
                     .Icon(NewCustomDescriptor(icon))
-                    .Title($"Marker {i} Lat: {pathpoint.Latitude} Lon: {pathpoint.Longitude}");
+                    .Title(title);
+                    //.Snippet($"Lat: {pathpoint.Latitude} Lon: {pathpoint.Longitude}");
+            
+            var marker = Map.AddMarker(mo);     
+            MarkerPathpoint.Add(marker.Id, pathpoint);
+            PathpointMarker.Add(pathpoint.Id.ToString(), marker);
 
-            Map.AddMarker(mo);
             i++;
         }
     }
 
+    /// <summary>
+    ///  Update the marker icon in the map
+    /// </summary>
+    /// <param name="pin"></param>
+    public void UpdateMarker(Pathpoint pin){
+        Debug.Log("UpdateMarker: " + pin.Id);
+        var marker = PathpointMarker[pin.Id.ToString()];
+        marker.SetIcon(NewCustomDescriptor(GetPathpointIcon(pin)));
+    }
+
+    /// <summary>
+    /// Swap the markers in the map
+    /// </summary>
+    /// <param name="pin1">Pin origin</param>
+    /// <param name="pin2">Pin destination</param>
+    public void SwapMarkers(Pathpoint pin1, Pathpoint pin2){
+
+        Debug.Log("SwapMarkers: " + pin1.Id + " to " + pin2.Id);
+
+        var marker1 = PathpointMarker[pin1.Id.ToString()];
+        var marker2 = PathpointMarker[pin2.Id.ToString()];
+
+        PathpointMarker[pin1.Id.ToString()] = marker2;
+        PathpointMarker[pin2.Id.ToString()] = marker1;
+
+        MarkerPathpoint[marker1.Id.ToString()] = pin2;
+        MarkerPathpoint[marker2.Id.ToString()] = pin1;
+
+        UpdateMarker(pin1);
+        UpdateMarker(pin2);
+
+        OnMarkerClickHandler(DestinationMarker);
+
+    }
+
+    /// <summary>  
+    /// Obtains the icon to display in the map based on the Pathpoint type
+    /// </summary>
+    /// <param name="pathpoint">Pathpoint to render</param>
+    private Texture2D GetPathpointIcon(Pathpoint pathpoint, bool selected = false)
+    {
+        Texture2D icon = null;
+        if (pathpoint.POIType == Pathpoint.POIsType.Point)
+        {
+            icon = selected? SelecteddMarkerIcon : ColoredMarkerIcon;
+        }
+        else if (pathpoint.POIType == Pathpoint.POIsType.Landmark)
+        {                        
+            icon = (pathpoint.CleaningFeedback == Pathpoint.POIFeedback.No || pathpoint.RelevanceFeedback == Pathpoint.POIFeedback.No)? 
+                    DeletedPOILandmarkMarkerIcon : ScaledPOILandmarkMarkerIcon;
+            icon = selected? SelectedPOILandmarkMarkerIcon : icon;                    
+        }
+        else
+        {            
+            icon = (pathpoint.CleaningFeedback == Pathpoint.POIFeedback.No || pathpoint.RelevanceFeedback == Pathpoint.POIFeedback.No)? 
+                    DeletedPOIReassuranceMarkerIcon : ScaledPOIReassuranceMarkerIcon;
+            icon = selected? SelectedPOIReassuranceMarkerIcon: icon;                    
+        }
+
+        //Debug.Log("GetPathpointIcon: " + pathpoint.Id + " selected: " + selected + " icon: " + icon);
+        return icon;
+    }
 
     private void OnSnapshotReady(Texture2D snapshot)
     {
-        // Clean up the previous snapshot and sprite, if they exist
-        CleanupSnapshots();
+        LoadingAnimation.SetActive(false);
 
-        // Assign the new snapshot and create a new Sprite
-        currentSnapshot = snapshot;
-        currentSprite = Sprite.Create(snapshot, new Rect(0, 0, snapshot.width, snapshot.height), new Vector2(0.5f, 0.5f));
-        MapSnapshot.sprite = currentSprite;
+        // Clean up the previous snapshot and sprite, if they exist
+        if (!Map.IsVisible) { 
+            CleanupSnapshots();            
+
+            // Assign the new snapshot and create a new Sprite
+            currentSnapshot = snapshot;
+            currentSprite = Sprite.Create(snapshot, new Rect(0, 0, snapshot.width, snapshot.height), new Vector2(0.5f, 0.5f));
+            MapSnapshot.sprite = currentSprite;
+
+            Debug.Log("Snapshot taken!");
+        }
+        else
+        {
+            DestroyImmediate(snapshot);
+        }
     }
 
 
     private void LoadMap(int zoom)
     {
-
         // initialize Map
-
         var options = new GoogleMapsOptions();        
 
         if (PathpointList != null && PathpointList.Count > 0)
@@ -235,7 +372,7 @@ public class MapManager : MonoBehaviour
 
         // Convert the bottom-left corner to screen coordinates
         Vector2 canvasPosition = RectTransformUtility.WorldToScreenPoint(Camera.main, corners[0]);
-        canvasPosition.y += 35;
+        canvasPosition.y += GetScaleRatio() * (Toolbar.GetComponent<RectTransform>().rect.height-5);
 
         return canvasPosition;
     }
@@ -246,10 +383,77 @@ public class MapManager : MonoBehaviour
     /// </summary>
     private void OnMapReady(GoogleMapsView googleMapsView)
     {
+        Toolbar.ShowToolbar(false);
+
         Debug.Log("The map is ready!");
         Map = googleMapsView;
 
         DisplayMarkers(PathpointList);
+
+        Map.SetOnMarkerClickListener(OnMarkerClickHandler, false);
+        Map.SetOnMapClickListener(OnMapClickHandler);
+    }
+
+    private void OnMarkerClickHandler(Marker marker)
+    {            
+        Pathpoint pathpoint = MarkerPathpoint[marker.Id];
+        Debug.Log($"Marker clicked: {marker.Title}" + " Pathpoint: " + pathpoint.Id);
+
+
+        OnPathpointSelected?.Invoke(pathpoint);
+
+        // Unselect the marker if it's currently active
+        RenderMarkerUnselected(DestinationMarker, DestinationPathpoint);
+
+        if (!EnableDestinationMarker)
+        {
+           // Unselect the previously selected marker 
+           RenderMarkerUnselected(SelectedMarker, SelectedPathpoint);
+           SelectedMarker = marker;    
+
+           // Select the clicked marker
+           SelectedPathpoint = pathpoint;
+           RenderMarkerSelected(SelectedMarker, pathpoint);
+
+           return;
+        }
+
+        DestinationMarker = marker;
+        DestinationPathpoint = pathpoint;
+        RenderMarkerSelected(DestinationMarker, DestinationPathpoint);
+    }
+
+    private void OnMapClickHandler(LatLng latLng)
+    {
+        Debug.Log($"Map clicked: {latLng.Latitude}, {latLng.Longitude}");    
+
+        RenderMarkerUnselected(SelectedMarker, SelectedPathpoint);
+        RenderMarkerUnselected(DestinationMarker, DestinationPathpoint);
+
+        SelectedMarker = null;
+        DestinationMarker = null;
+        SelectedPathpoint = null;
+        DestinationPathpoint = null;        
+
+        OnPathpointSelected?.Invoke(null);
+    }
+
+    private void RenderMarkerSelected(Marker marker, Pathpoint pathpoint){
+        if (marker != null)
+        {            
+            var icon = GetPathpointIcon(pathpoint, selected : true);
+            marker.SetIcon(NewCustomDescriptor(icon));
+            marker.SetAnchor(0.5f, 0.5f);
+        }
+    }
+
+    private void RenderMarkerUnselected(Marker marker, Pathpoint pathpoint){
+        if (marker != null)
+        {
+            var icon = GetPathpointIcon(pathpoint, selected : false);
+            marker.SetIcon(NewCustomDescriptor(icon));            
+            marker.SetAnchor(0.5f, 1.0f);
+        }
     }
 
     private Texture2D ChangeIconColor(Texture2D icon, Color color)
@@ -319,20 +523,23 @@ public class MapManager : MonoBehaviour
         }
     }
 
-
     void OnDestroy()
     {
         DestroyImmediate(ColoredMarkerIcon);
         DestroyImmediate(ScaledPOILandmarkMarkerIcon);
         DestroyImmediate(ScaledPOIReassuranceMarkerIcon);
+        DestroyImmediate(SelecteddMarkerIcon);
+        DestroyImmediate(SelectedPOILandmarkMarkerIcon);
+        DestroyImmediate(SelectedPOIReassuranceMarkerIcon);
+        DestroyImmediate(DeletedPOILandmarkMarkerIcon);
+        DestroyImmediate(DeletedPOIReassuranceMarkerIcon);
 
         CleanupSnapshots();
 
         if (Map != null)
         {
             Map.Dismiss();
-        }
-        
+        }        
     }
 
 

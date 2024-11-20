@@ -29,52 +29,12 @@ public class RouteEditorController : MonoBehaviour
         SharedData.OnDataPartiallyDownloaded += RouteSharedData_OnDataPartiallyDownloaded;
         SharedData.OnDataUploaded += SharedData_OnDataUploaded;
 
-        SharedData.DownloadRouteDefinition();
+        SharedData.DownloadRouteDefinition();        
     }
 
     /**********************
      *  Public UI events (and utilities)  *
      **********************/
-
-    /// <summary>
-    /// Toggle the route video representation, where active turns on video and inactive the map
-    /// </summary>
-    /// <param name="videoActive">Whether video should be active</param> 
-    //public void ToggleRouteRepresentation(bool videoActive)
-    //{
-    //    if (videoActive)
-    //    {
-    //        GMap.DisableMap();
-    //        // Activating the component, and then resuming to the last timestamp
-    //        VideoManager.gameObject.SetActive(videoActive); // function to hide!        
-    //        //VideoManager.ResumeVideo();
-    //    }
-    //    else // videoActive = false
-    //    {
-    //        GMap.EnableMap();
-    //        // Pausing the component to get the current timestamp,
-    //        // and then disabling the component
-    //        //VideoManager.PauseVideo();
-    //        VideoManager.gameObject.SetActive(videoActive);
-    //    }
-        
-    //}
-
-
-    //public void RenderPathpointTrace(PathpointTraceMessage traceMessage)
-    //{
-    //    Debug.Log($"RenderPathpointTrace {traceMessage.type} {traceMessage.eventType}");
-    //    GMap.RenderMarker(traceMessage);        
-    //}
-
-    ///// <summary>
-    ///// Safely terminate the editor
-    ///// </summary>
-    //public void TerminateEditor()
-    //{
-    //    GMap.DisableMap();
-    //}
-
 
     public void LoadInfo() {
 
@@ -132,6 +92,23 @@ public class RouteEditorController : MonoBehaviour
 
     // private functions
 
+    /// <summary>
+    ///  SetupEditorMode is called to set the editor mode based on the status of the route
+    /// </summary>
+    private void SetupEditorMode() {
+        if (SharedData.CurrentRoute.Status == Route.RouteStatus.New)
+        {
+            SharedData.CurrentEditorMode = RouteSharedData.EditorMode.Cleaning;
+        }
+        else if (SharedData.CurrentRoute.Status == Route.RouteStatus.DraftPrepared)
+        {
+            SharedData.CurrentEditorMode = RouteSharedData.EditorMode.Discussion;
+        }
+        else
+        {
+            SharedData.CurrentEditorMode = RouteSharedData.EditorMode.ReadOnly;
+        }
+    }
 
     private void RouteSharedData_OnDataDownloaded(object sender, EventArgs e)
     {
@@ -141,6 +118,7 @@ public class RouteEditorController : MonoBehaviour
     private void RouteSharedData_OnDataPartiallyDownloaded(object sender, EventArgs e)
     {
         SharedData.LoadRouteFromDatabase();
+        SetupEditorMode();        
         LoadOnboarding();
     }
 

@@ -123,5 +123,25 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 3286163911610860551, guid: a08b79b87329940ea860ea964cdeaeb2, type: 3}
+    - target: {fileID: 9195871138022221512, guid: b43734bdfbecc47eebbda1057cf471ce, type: 3}
+      propertyPath: m_text
+      value: Ich kenne diesen Punkt
+      objectReference: {fileID: 0}
+    - target: {fileID: 9195871138022221512, guid: b43734bdfbecc47eebbda1057cf471ce, type: 3}
+      propertyPath: m_fontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 9195871138022221512, guid: b43734bdfbecc47eebbda1057cf471ce, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 9195871138022221512, guid: b43734bdfbecc47eebbda1057cf471ce, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -2345321288824047370, guid: c50986a038e6146e4bdc67610bf42a3b, type: 2}
+    - target: {fileID: 9195871138022221512, guid: b43734bdfbecc47eebbda1057cf471ce, type: 3}
+      propertyPath: m_characterSpacing
+      value: -1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b43734bdfbecc47eebbda1057cf471ce, type: 3}

@@ -1,7 +1,9 @@
 using UnityEngine;
 
-
-public class POIEdit : MonoBehaviour
+/// <summary>
+/// POIEdit is a component that manages the UI elements for editing a POI
+/// </summary>
+public class POIEdit : MonoBehaviour, IServeContextualHelp
 {
     [Header("UI Elements")]
     public PinDetailsEdit PinEdit;
@@ -32,12 +34,13 @@ public class POIEdit : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// LoadView is called to load the POIEdit view
+    /// </summary>
+    /// <param name="index"> The index of the POI in the timeline </param>
     public void LoadView(int index)
     {
         gameObject.SetActive(true);        
-
-        // Editor mode (Cleaning, Discussion)
-        SetupEditorMode();
 
         //PinEdit
         LoadPinEdit(index);
@@ -47,23 +50,34 @@ public class POIEdit : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// LoadGallery is called to load the Photo gallery ovierview
+    /// </summary>
     public void LoadGallery()
     {
-        HideAllButThisView(Gallery.gameObject);
+        ShowView(Gallery.gameObject);
         Gallery.EditMode = SharedData.CurrentEditorMode;
         Gallery.Clearlist();
-        Gallery.LoadPhotos(SharedData.CurrentPOI.Photos);
+        Gallery.LoadPhotos(SharedData.CurrentPOI.Photos, SharedData.CurrentPOI);
         PinEdit.EnableSwitchToGallery(false);
     }
 
+    /// <summary>
+    /// LoadSlideShow is called to load the Photo slideshow fullscreen
+    /// </summary>
+    /// <param name="photo"></param>
+    /// <param name="startIndex"></param>
     public void LoadSlideShow(PathpointPhoto photo, int startIndex)
     {
-        HideAllButThisView(SlideShow.gameObject);
+        ShowView(SlideShow.gameObject);
         SlideShow.EditMode = SharedData.CurrentEditorMode;
         SlideShow.LoadSlideShow(SharedData.CurrentPOI.Photos, startIndex);
         PinEdit.EnableSwitchToGallery(false);
     }
 
+    /// <summary>
+    /// LoadPinMeta is called to load the metadata of the POI
+    /// </summary>
     public void LoadPinMeta()
     {
         //HideAllButThisView(PinMeta.gameObject);
@@ -72,9 +86,12 @@ public class POIEdit : MonoBehaviour
         PinMeta.PopulateMetadata(SharedData.CurrentPOI, SharedData.CurrentWay);
     }
 
+    /// <summary>
+    /// LoadVideo is called to load the video of the POI
+    /// </summary>
     public void LoadVideo()
     {
-        HideAllButThisView(Video.gameObject);
+        ShowView(Video.gameObject);
 
 
         Video.LoadVideo(SharedData.POIList[0]);
@@ -89,13 +106,24 @@ public class POIEdit : MonoBehaviour
         PinEdit.EnableSwitchToGallery(true);
     }
 
+    /// <summary>
+    /// GetContextualHelpKey is called to get the key for the contextual help (IServeContextualHelp)
+    /// </summary>
+    public string GetContextualHelpKey(){
+        return SharedData?.CurrentEditorMode.ToString();
+    }
+
     private void LoadPinEdit(int index) {
         PinEdit.EditMode = SharedData.CurrentEditorMode;
         //PinEdit.DisableChangesOnPOI(false);
         PinEdit.PopulateMetadata(SharedData.CurrentPOI, SharedData.CurrentWay, index);
     }
 
-    private void HideAllButThisView(GameObject view)
+    /// <summary>
+    /// Displays a view and hides all other views
+    /// </summary>
+    /// <param name="view"></param>
+    private void ShowView(GameObject view)
     {
         SlideShow.gameObject.SetActive(SlideShow.gameObject == view);
         if (SlideShow.gameObject != view)
@@ -119,22 +147,9 @@ public class POIEdit : MonoBehaviour
 
     }
 
-    private void SetupEditorMode() {
-        if (SharedData.CurrentRoute.Status == Route.RouteStatus.New)
-        {
-            SharedData.CurrentEditorMode = RouteSharedData.EditorMode.Cleaning;
-        }
-        else if (SharedData.CurrentRoute.Status == Route.RouteStatus.DraftPrepared)
-        {
-            SharedData.CurrentEditorMode = RouteSharedData.EditorMode.Discussion;
-        }
-        else
-        {
-            SharedData.CurrentEditorMode = RouteSharedData.EditorMode.ReadOnly;
-        }
-
-    }
-
+    /// <summary>
+    /// CleanupView is called to hide all views
+    /// </summary>
     public void CleanupView()
     {
         PinEdit.CleanupView();

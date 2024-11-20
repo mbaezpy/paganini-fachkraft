@@ -36,7 +36,7 @@ public class UserPicEdit : MonoBehaviour
         // Change the profile picture
         PhotoFilePicker.OnPhotoSelected.RemoveAllListeners();
         PhotoFilePicker.OnPhotoSelected.AddListener(PhotoSelectedHandler);
-        PhotoFilePicker.PickUpFile();            
+        PhotoFilePicker.PickUpImage();            
     }
 
     /// <summary>

@@ -7,6 +7,7 @@ using SFB = SimpleFileBrowser;
 using SimpleFileBrowser;
 using Unity.Entities.UniversalDelegates;
 using static SynchronizationController;
+using System.Runtime.CompilerServices;
 
 public class FileImportHandler : MonoBehaviour
 {
@@ -43,6 +44,8 @@ public class FileImportHandler : MonoBehaviour
     [SerializeField] private TMPro.TMP_Text LogText;
     [SerializeField] private RouteListPrefab AvailableRoutes;
 
+    [Header("Utility")]
+    public PhotoPicker PhotoFilePicker;
 
 
     void Start()
@@ -54,6 +57,27 @@ public class FileImportHandler : MonoBehaviour
     }
 
     public void Initialise()
+    {
+        // Check if the platform is Android
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            InitialiseAndroid();
+        }
+        else
+        {
+            InitialiseEditor();
+        }
+    }
+
+    public void InitialiseEditor()
+    {
+        SourceFolderPath = null;
+        PhotoFilePicker.OnPhotoSelected.RemoveAllListeners();
+        PhotoFilePicker.OnPhotoSelected.AddListener(PathSelectedHandler);
+        PhotoFilePicker.PickUpFile(new string[] { NativeFilePicker.ConvertExtensionToFileType("xml") });    
+    }    
+
+    public void InitialiseAndroid()
     {
         SourceFolderPath = null;
 
@@ -70,6 +94,32 @@ public class FileImportHandler : MonoBehaviour
 
         //StartCoroutine(ShowLoadDialogCoroutine());
     }
+
+    private void PathSelectedHandler(string filePath)
+    {
+        Debug.Log("PathSelectedHandler() called with path: " + filePath);
+
+        if (!string.IsNullOrEmpty(filePath))
+        {
+            // Extract the folder path (everything up to the last directory separator)
+            SourceFolderPath = Path.GetDirectoryName(filePath);
+
+            // Extract the folder name (the last part of the path)
+            SourceFolderPathName = Path.GetFileName(SourceFolderPath);
+
+            Debug.Log($"SourceFolderPathName: {SourceFolderPathName} | SourceFolderPath: {SourceFolderPath}");
+
+            // Update the UI with the selected folder name
+            VolumeNameText.text = SourceFolderPathName;
+
+            // Display the screen panel for volume selection
+            DisplayScreenPanel(VolumeSelectedPanel);
+        }
+        else
+        {
+            Debug.LogWarning("PathSelectedHandler() received a null or empty path.");
+        }
+    } 
 
     IEnumerator CheckPathCoroutine()
     {
@@ -116,7 +166,16 @@ public class FileImportHandler : MonoBehaviour
         try
         {
             //TODO: Does it throw an Exception if the folder does not exist?
-            SFB.FileBrowserHelpers.CopyDirectory(SourceFolderPath, TempPath);
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                SFB.FileBrowserHelpers.CopyDirectory(SourceFolderPath, TempPath);
+            }
+            else 
+            {
+                CopyDirectory(SourceFolderPath, TempPath);
+            }
+            
+            
 
             LogText.text += "SourceFolderPath: " + SourceFolderPath + "\n";
 
@@ -151,6 +210,27 @@ public class FileImportHandler : MonoBehaviour
         yield return null;
 
     }
+
+    void CopyDirectory(string sourceDir, string destDir)
+    {
+        // Ensure the destination directory exists
+        if (!Directory.Exists(destDir))
+            Directory.CreateDirectory(destDir);
+
+        // Copy all files in the source directory to the destination directory
+        foreach (string file in Directory.GetFiles(sourceDir))
+        {
+            string destFile = Path.Combine(destDir, Path.GetFileName(file));
+            File.Copy(file, destFile, true); // true to overwrite existing files
+        }
+
+        // Recursively copy subdirectories
+        foreach (string dir in Directory.GetDirectories(sourceDir))
+        {
+            string destDirName = Path.Combine(destDir, Path.GetFileName(dir));
+            CopyDirectory(dir, destDirName);
+        }
+    }    
 
 
     public void OnRouteSelected(Way w, Route r) {

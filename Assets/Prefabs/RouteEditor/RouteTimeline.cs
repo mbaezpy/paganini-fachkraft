@@ -93,7 +93,7 @@ public class RouteTimeline: MonoBehaviour
                 }
                 POITimelineView.AddDestination(item, SharedData.CurrentWay);
                 
-            } else {
+            } else {                
                 POITimelineView.AddPOI(item);
             }
 
