@@ -563,7 +563,7 @@ GameObject:
   - component: {fileID: 7047919039934434530}
   - component: {fileID: 7681633610224612525}
   m_Layer: 5
-  m_Name: UI_HELP
+  m_Name: MainContextualHelp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

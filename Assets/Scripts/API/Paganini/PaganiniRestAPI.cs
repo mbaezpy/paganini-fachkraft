@@ -115,7 +115,7 @@ namespace PaganiniRestAPI
     public class User
     {
 
-        public static void GetByID(Int32 id, UnityAction<UserAPI> successCallback, UnityAction<string> errorCallback)
+        public static void GetByID(Int32 id, UnityAction<UserAPIResult> successCallback, UnityAction<string> errorCallback)
         {
             Dictionary<string, string> headers = new Dictionary<string, string>
             {
@@ -124,7 +124,7 @@ namespace PaganiniRestAPI
 
             string url = string.Format(Path.SwUsers, id);
 
-            RESTAPI.Instance.Get<UserAPI>(url, successCallback, errorCallback, headers);
+            RESTAPI.Instance.Get<UserAPIResult>(url, successCallback, errorCallback, headers);
         }
 
         public static void GetAll(UnityAction<UserAPIList> successCallback, UnityAction<string> errorCallback)

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using SQLite4Unity3d;
-using UnityEngine.Profiling;
 
 public class SocialWorker : BaseModel<SocialWorker>, ICloneable
 {
