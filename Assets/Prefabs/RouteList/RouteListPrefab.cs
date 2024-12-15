@@ -100,7 +100,7 @@ public class RouteListPrefab : MonoBehaviour
         w.UserId = item.UserId;
 
         Route r = new Route();
-        r.Id = item.Id;
+        r.Id = item.RouteId;
         r.Date = item.RecordingDate;
         r.Name = item.RecordingName;
 

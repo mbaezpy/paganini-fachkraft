@@ -48,6 +48,7 @@ public class InternalDataModel
         public int UserId { set; get; }
         public bool IsDirty { set; get; }
 
+        public int RouteId { set; get; }
         public System.DateTime RecordingDate { set; get; }
         public string RecordingName { set; get; }
         public string LocalVideoResolution { set; get; }

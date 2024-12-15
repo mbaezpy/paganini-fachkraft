@@ -190,9 +190,9 @@ public class SynchronizationController : MonoBehaviour
 
         List<DetailedWayExport> listOfWays = DetailedWayExportFiles.ParseDWEFile("waysForExport.xml", downloadPath);
 
-        erw = InternalDataModelController.GetInternalDataModelController().idm.exploritoryRouteWalks.Find(x => x.Id.Equals(erwId));
+        erw = InternalDataModelController.GetInternalDataModelController().idm.exploritoryRouteWalks.Find(x => x.RouteId.Equals(erwId));
 
-        selectedDwe = listOfWays.Find(x => x.Id.Equals(erwId));
+        selectedDwe = listOfWays.Find(x => x.RouteId.Equals(erwId));
 
         if (erw == null) //NEW AND INSERT
         {
@@ -211,7 +211,7 @@ public class SynchronizationController : MonoBehaviour
     public bool CheckIfOverwriteRequired(int erwId)
     {
         
-        erw = InternalDataModelController.GetInternalDataModelController().idm.exploritoryRouteWalks.Find(x => x.Id.Equals(erwId));        
+        erw = InternalDataModelController.GetInternalDataModelController().idm.exploritoryRouteWalks.Find(x => x.RouteId.Equals(erwId));        
 
         return erw != null;
 
@@ -225,7 +225,7 @@ public class SynchronizationController : MonoBehaviour
     public void SyncFromImportedFolder(int erwId, string importPath, string sourceFolderName)
     {
         List<DetailedWayExport> listOfWays = DetailedWayExportFiles.ParseDWEFile("waysForExport.xml", importPath);
-        selectedDwe = listOfWays.Find(x => x.Id.Equals(erwId));
+        selectedDwe = listOfWays.Find(x => x.RouteId.Equals(erwId));
 
         erw = new DataOfImportedERW();
 
@@ -404,12 +404,13 @@ public class SynchronizationController : MonoBehaviour
         erw.Destination = dwe.Destination;
         erw.DestinationType = dwe.DestinationType;
         erw.Folder = dwe.Folder;
-        erw.Id = dwe.Id;
+        erw.Id = dwe.Id;        
         erw.Name = dwe.Name;
         erw.Start = dwe.Start;
         erw.StartType = dwe.StartType;
         erw.UserId = dwe.UserId;
         erw.FromAPI = dwe.FromAPI;
+        erw.RouteId = dwe.RouteId;
         erw.RecordingDate = dwe.RecordingDate;
         erw.RecordingName = dwe.RecordingName;
         erw.LocalVideoResolution = dwe.LocalVideoResolution;
@@ -517,7 +518,7 @@ public class SynchronizationController : MonoBehaviour
         // Update the internal data model. If the erw doesn't exist, we add it to the
         // internal data model. If it does, we just need to update it
         if (InternalDataModelController.GetInternalDataModelController()
-            .idm.exploritoryRouteWalks.Find(x => x.Id.Equals(erw.Id)) == null)
+            .idm.exploritoryRouteWalks.Find(x => x.RouteId.Equals(erw.RouteId)) == null)
         {
             InternalDataModelController.GetInternalDataModelController().idm.exploritoryRouteWalks.Add(erw);
         }
@@ -582,10 +583,11 @@ public class SynchronizationController : MonoBehaviour
         w.Insert();
 
         // replace with timestamp
-        int routeId = w.Id * 10000 + System.DateTime.UtcNow.Millisecond;
+        //int routeId = w.Id * 10000 + System.DateTime.UtcNow.Millisecond;
 
         Route r = new Route();
-        r.Id = -routeId;
+        //r.Id = -routeId;
+        r.Id = erw.RouteId;
         r.Name = erw.RecordingName;
         r.Date = erw.RecordingDate;
         r.StartTimestamp = erw.StartTimestamp;
@@ -602,10 +604,13 @@ public class SynchronizationController : MonoBehaviour
 
         List<Pathpoint> ppList = CleanRoutePathpoints(erw.Pathpoints);
 
+        var minPP = Pathpoint.GetWithMinId(x => x.Id);
+        int ppId = minPP == null? -1 : minPP.Id > 0 ? -1 : minPP.Id - 1;
 
         foreach (var pp in ppList)
         {
-            pp.Id = -routeId++;
+            //pp.Id = -routeId++;
+            pp.Id = ppId--;
             pp.RouteId = r.Id;
             pp.InsertDirty();
             
@@ -960,7 +965,7 @@ public class SynchronizationController : MonoBehaviour
     /// </summary>
     private void RequestSelectedERW()
     {
-        string msg = $"REQUEST-ERW-{selectedDwe.Id}";
+        string msg = $"REQUEST-ERW-{selectedDwe.RouteId}";
         LogProcess($"RequestSelectedERW: {msg}");
 
         RequestFile(msg);
@@ -1138,6 +1143,7 @@ public class SynchronizationController : MonoBehaviour
         public string Description { set; get; }
         public int UserId { set; get; }
 
+        public int RouteId { set; get; }
         public System.DateTime RecordingDate { set; get; }
         public string RecordingName { set; get; }
         public string LocalVideoResolution { set; get; }
