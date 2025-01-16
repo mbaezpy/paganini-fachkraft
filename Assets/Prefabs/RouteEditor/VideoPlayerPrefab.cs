@@ -77,9 +77,10 @@ public class VideoPlayerPrefab : MonoBehaviour
 
         if (!VideoManager.isPrepared)
         {
+            Debug.Log("Video not prepared yet, waiting for it to be ready");
             VideoManager.prepareCompleted -= OnVideoPrepareCompleted;
             VideoManager.prepareCompleted += OnVideoPrepareCompleted;
-            VideoManager.Play();
+            VideoManager.Play();            
         }
 
         // Remove previous texture
@@ -103,6 +104,9 @@ public class VideoPlayerPrefab : MonoBehaviour
 
     private bool videoJustLoaded = true;
     public void EnableVideoControls() {
+
+        Debug.Log("EnableVideoControls   time: " + VideoManager.time + "- StartTimestamp" + StartTimestamp + " - EndTimestamp" + EndTimestamp + " - videoJustLoaded: " + videoJustLoaded); 
+
         VideoManager.Pause();
         ControlWrapper.SetActive(true);
         
@@ -192,6 +196,8 @@ public class VideoPlayerPrefab : MonoBehaviour
             if (VideoManager != null)
             {
                 VideoManager.url = url;
+                VideoManager.errorReceived -= OnVideoError;
+                VideoManager.errorReceived += OnVideoError;
                 if (aspectRatio == null)
                 {
                     StartCoroutine(DetectVideoResolution());
@@ -222,6 +228,12 @@ public class VideoPlayerPrefab : MonoBehaviour
 
         SetAspectRatioToVideo(VideoManager.gameObject, videoAspectRatio);
 
+    }
+
+    private void OnVideoError(VideoPlayer player, string message)
+    {
+        Debug.LogError("Video error: " + message);
+        ToastMessageManager.Instance.Toast.RenderAlertToast("Fehler beim Laden des Videos", message);
     }
 
     public void SetAspectRatioToVideo(GameObject targetObject, float videoAspectRatio)

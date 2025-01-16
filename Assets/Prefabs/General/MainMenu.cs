@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
@@ -42,7 +38,7 @@ public class MainMenu : MonoBehaviour
 
         SetupMenuOptions();
 
-        //AppState.CurrentSocialWorker.OnDataChanged.AddListener(UpdateSWProfile);
+        AppState.CurrentSocialWorker.OnDataChanged.AddListener(UpdateSWProfile);
     }
 
 
@@ -74,9 +70,12 @@ public class MainMenu : MonoBehaviour
     private void UpdateSWProfile()
     {
         if (gameObject.activeInHierarchy) {
+
             PictureUtils.RenderPicture(SWPhoto, AppState.CurrentSocialWorker.Data.ProfilePic);
-            SWName.text = AppState.CurrentSocialWorker.Data.Firstname + " " + AppState.CurrentSocialWorker.Data.Surname;
-        }        
+            SWName.text = AppState.CurrentSocialWorker.Data.Firstname + " " + AppState.CurrentSocialWorker.Data.Surname;                
+
+            //Debug.Log("SW Profile Updated" + gameObject.transform.parent.parent.name);   
+        }                  
     }
 
     private void UpdateUserProfile(){
@@ -91,8 +90,6 @@ public class MainMenu : MonoBehaviour
         Menu.SetActive(true);
         MenuOverlay.SetActive(true);  
         RenderCanOpen(false);     
-
-        UpdateSWProfile(); 
     }
 
     public void CloseMenu()
@@ -140,7 +137,7 @@ public class MainMenu : MonoBehaviour
         ButtonOpen.onClick.RemoveAllListeners();
         ButtonClose.onClick.RemoveAllListeners();
 
-        //AppState.CurrentSocialWorker.OnDataChanged.RemoveListener(UpdateSWProfile);
+        AppState.CurrentSocialWorker.OnDataChanged.RemoveListener(UpdateSWProfile);  
 
         if (SWPhoto.texture != null)
         {
@@ -160,12 +157,7 @@ public class MainMenu : MonoBehaviour
 
     private void RenderCanOpen(bool canOpen){
         ButtonOpen.gameObject.SetActive(canOpen);
-        ButtonClose.gameObject.SetActive(!canOpen);
-
-        if (SWPhoto.texture != null)
-        {
-            DestroyImmediate(SWPhoto.texture, true);
-        }        
+        ButtonClose.gameObject.SetActive(!canOpen);    
     }
 
 }

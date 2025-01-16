@@ -60,12 +60,7 @@ public class PhotoGallery : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
-    {
-        Clearlist();
-
-        if (CurrentPhotos != null)
-            LoadPhotos(CurrentPhotos, CurrentPathpoint);
-
+    {        
         AddPhotoButton.gameObject.SetActive(EditMode == RouteSharedData.EditorMode.Cleaning || EditMode == RouteSharedData.EditorMode.Discussion);
     }
 
@@ -80,6 +75,7 @@ public class PhotoGallery : MonoBehaviour
 
     public void Clearlist()
     {
+        Debug.Log("Clearing list!!!!!!!!!!!!!!!");
         if (!Content) return;
 
         Transform content = Content.GetComponent<Transform>();
@@ -91,15 +87,19 @@ public class PhotoGallery : MonoBehaviour
             GameObject child = content.GetChild(i).gameObject;
 
             // Destroy the child game object
-            DestroyItem(child);
+            if (child.name != "AddPhoto") 
+            {
+                DestroyItem(child);
+            }
+            
         }
     }
 
     public void LoadPhotos(List<PathpointPhoto> photos, Pathpoint pathpoint)
     {
-        //fix: To safely load, due to problem with initialisation
         CurrentPhotos = photos;
         CurrentPathpoint = pathpoint;
+
         if (!Content) return;
 
         int index = 0;
@@ -108,21 +108,24 @@ public class PhotoGallery : MonoBehaviour
             if (EditMode == RouteSharedData.EditorMode.Cleaning ||
                 photo.CleaningFeedback != PathpointPhoto.PhotoFeedback.Delete)
             {
-                AddItem(photo, index++);
+                if (photo.Data != null)
+                {
+                    AddItem(photo, index++);
+                }
+                
             }
             
             Debug.Log($"Id: {photo.Id} Timestamp:{photo.Timestamp}");
         }
 
-        //TODO: Prepare the Gallery based on the EditMode
-        // Edit during cleaning
-        // Feedback during discussion
+        RefreshAddPhotoCard();
+
     }
 
     public void AddNewPhoto(){
         // Change the profile picture
         PhotoFilePicker.OnPhotoSelected.RemoveAllListeners();
-        PhotoFilePicker.OnPhotoSelected.AddListener(PhotoSelectedHandler);
+        PhotoFilePicker.OnPhotoSelected.AddListener(NewPhotoSelectedHandler);
         PhotoFilePicker.PickUpImage();                    
     }
 
@@ -175,7 +178,7 @@ public class PhotoGallery : MonoBehaviour
     /// Handle the photo selected event
     /// </summary>
     /// <param name="path">Path to the selected photo</param>
-    private void PhotoSelectedHandler(string path){
+    private void NewPhotoSelectedHandler(string path){
         if (path != null) {
             var picBytes = PictureUtils.LoadImageFile(path);
              
@@ -197,14 +200,42 @@ public class PhotoGallery : MonoBehaviour
             newPhoto.Id = ppId;
             newPhoto.PathpointId = CurrentPathpoint.Id;
             newPhoto.Timestamp = DateUtils.UTCMilliseconds();
+            newPhoto.PhotoId = photoData.Id;
             newPhoto.Data = photoData;
+
+            // If the photo is added  in Discussion mode, the cleaning feedback should be 'Keep'
+            // so that it is not curated as 'deleted' by default
+            if (EditMode == RouteSharedData.EditorMode.Discussion)
+            {
+                newPhoto.CleaningFeedback = PathpointPhoto.PhotoFeedback.Keep;
+            }
+
             newPhoto.InsertDirty();
 
             CurrentPhotos.Add(newPhoto);            
             AddItem(newPhoto, CurrentPhotos.Count - 1);
+
+            // push the blank state to the end of the list, again
+            RefreshAddPhotoCard();
+            
         }
 
-    }    
+    }   
+
+    private void RefreshAddPhotoCard(){
+        // Show blank state card suggesting users to add a new photo (when there are less than 3 photos, otherwise the button is also there)
+        bool showBlankState = CurrentPhotos.Count < 3 && EditMode == RouteSharedData.EditorMode.Cleaning || EditMode == RouteSharedData.EditorMode.Discussion;
+        if (BlankState != null)
+        {
+            BlankState.SetActive(showBlankState);
+
+            // Reparent blank state to the end of the list
+            if (showBlankState)
+            {
+                BlankState.transform.SetAsLastSibling();
+            }
+        }        
+    } 
 
     public void CleanupView()
     {

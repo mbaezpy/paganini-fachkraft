@@ -1,11 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using LocationTools;
 using NinevaStudios.GoogleMaps;
-using PaganiniRestAPI;
-using Unity.Entities.UniversalDelegates;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -208,9 +204,9 @@ public class MapManager : MonoBehaviour, IMapSnapshotHandler
     ///  Update the marker icon in the map
     /// </summary>
     /// <param name="pin"></param>
-    public void UpdateMarker(Pathpoint pin){
-        Debug.Log("UpdateMarker: " + pin.Id);
+    public void UpdateMarker(Pathpoint pin){        
         var marker = PathpointMarker[pin.Id.ToString()];
+        Debug.Log("UpdateMarker: " + pin.Id + " " + pin.POIType + " marker: "+ marker.Id);
         marker.SetIcon(NewCustomDescriptor(GetPathpointIcon(pin)));
     }
 
@@ -226,17 +222,41 @@ public class MapManager : MonoBehaviour, IMapSnapshotHandler
         var marker1 = PathpointMarker[pin1.Id.ToString()];
         var marker2 = PathpointMarker[pin2.Id.ToString()];
 
+        // Set proper titles
+        marker2.Title = marker1.Title;  // marker turned into a POI gets the title of the POI
+        // old marker gets the title of a point, with the proper index
+        var poinIndex = PathpointList.FindIndex(p => p.Id == pin2.Id); 
+        marker1.Title = "GPS Punkt " + poinIndex;
+
         PathpointMarker[pin1.Id.ToString()] = marker2;
         PathpointMarker[pin2.Id.ToString()] = marker1;
 
         MarkerPathpoint[marker1.Id.ToString()] = pin2;
         MarkerPathpoint[marker2.Id.ToString()] = pin1;
 
-        UpdateMarker(pin1);
-        UpdateMarker(pin2);
+        //UpdateMarker(pin1);
+        //UpdateMarker(pin2);
 
-        OnMarkerClickHandler(DestinationMarker);
+        // not clear whether the markers are updated correctly
+        // SelectedMarker = marker1;
+        // DestinationMarker = marker2;        
+        DestinationPathpoint = pin1;
+        SelectedPathpoint = pin2;
 
+        marker1.SetIcon(NewCustomDescriptor(GetPathpointIcon(pin2)));
+        marker2.SetIcon(NewCustomDescriptor(GetPathpointIcon(pin1)));
+
+        OnMarkerClickHandler(marker2);
+
+    }
+
+    /// <summary>
+    /// Refreshes the currently selected marker as focused in the map
+    /// </summary>
+    public void RefreshSelectedMarkersAsFocused(){
+        if (SelectedMarker != null){
+            RenderMarkerSelected(SelectedMarker, SelectedPathpoint);
+        }
     }
 
     /// <summary>  
@@ -263,7 +283,8 @@ public class MapManager : MonoBehaviour, IMapSnapshotHandler
             icon = selected? SelectedPOIReassuranceMarkerIcon: icon;                    
         }
 
-        //Debug.Log("GetPathpointIcon: " + pathpoint.Id + " selected: " + selected + " icon: " + icon);
+        // Debug.Log("GetPathpointIcon: " + pathpoint.Id + " selected: " + selected + " icon: " + 
+        // icon + " type: " + pathpoint.POIType + " feedback: " + pathpoint.CleaningFeedback + " relevance: " + pathpoint.RelevanceFeedback);
         return icon;
     }
 
@@ -398,7 +419,6 @@ public class MapManager : MonoBehaviour, IMapSnapshotHandler
     {            
         Pathpoint pathpoint = MarkerPathpoint[marker.Id];
         Debug.Log($"Marker clicked: {marker.Title}" + " Pathpoint: " + pathpoint.Id);
-
 
         OnPathpointSelected?.Invoke(pathpoint);
 

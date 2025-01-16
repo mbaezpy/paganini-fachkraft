@@ -1,11 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using static SocketsAPI;
 
 public class MapToolbar : MonoBehaviour
 {
@@ -59,6 +57,10 @@ public class MapToolbar : MonoBehaviour
         TipView.SetActive(false);        
     }
 
+    /// <summary>
+    /// PinSelectedHandler is called when a pin is selected in the map
+    /// </summary>
+    /// <param name="pin"> The selected pin </param>
     public void PinSelectedHandler(Pathpoint pin){
 
         // POIMoving
@@ -165,6 +167,7 @@ public class MapToolbar : MonoBehaviour
         // We are not deleting the GPS points, once they are in the API
 
         MapView.UpdateMarker(CurrentPathpoint);
+        MapView.RefreshSelectedMarkersAsFocused();
         PinSelectedHandler(CurrentPathpoint);
     }
 
@@ -185,6 +188,7 @@ public class MapToolbar : MonoBehaviour
         Debug.Log("POI lazy deleted with feedback");        
 
         MapView.UpdateMarker(CurrentPathpoint);
+        MapView.RefreshSelectedMarkersAsFocused();
         PinSelectedHandler(CurrentPathpoint);        
     }
 
@@ -222,6 +226,8 @@ public class MapToolbar : MonoBehaviour
 
         // Update the target
         TargetPathpoint = null;
+
+        // refresh the currently selected marker?
     }
 
     public void CancelMovePOI(){
@@ -231,6 +237,12 @@ public class MapToolbar : MonoBehaviour
     }    
 
     private void PrepareMoving(Pathpoint pin){
+
+        // Cancel if the user tap outside the map
+        if (pin == null){
+            CancelMovePOI();
+            return;
+        }
 
         Debug.Log("PrepareMoving " + pin.POIType + " - CurrentPathpoint "+ CurrentPathpoint.Id + " - TargetPathpoint: "+ pin.Id);
 

@@ -53,7 +53,7 @@ public class PhotoElementPrefab : MonoBehaviour
         CurrentPathpointPhoto = p;
         CurrentIndex = index;
 
-        Debug.Log("GameObject: "+ gameObject.name + " -  FillPhoto: " + p.Id + " -  CurrentIndex: "+ CurrentIndex + " - enableSelection: " + enableSelection + " - displayFeedback: " + displayFeedback);
+        //Debug.Log("FillPhoto: " + gameObject.transform.parent.name + " GameObject: "+ gameObject.name + " -  PathpointPhoto: " + p.Id + " -  CurrentIndex: "+ CurrentIndex + " - enableSelection: " + enableSelection + " - displayFeedback: " + displayFeedback);
 
         EnableSelection(enableSelection);
 
@@ -74,11 +74,10 @@ public class PhotoElementPrefab : MonoBehaviour
         else
         {
             KeepItToggle.gameObject.SetActive(false);
-        }
-        
-
+        }        
 
         ApplyDeselectionEffect(SelectedToggle.isOn);
+
     }
 
     private void RenderPicture(byte[] imageBytes)

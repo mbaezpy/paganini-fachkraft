@@ -68,15 +68,16 @@ MonoBehaviour:
       m_Calls: []
   m_text: Hund.Katze.Maus
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 142c2ddb665de41df9d3e851a24ac22f, type: 2}
-  m_sharedMaterial: {fileID: 7595629214201676813, guid: 142c2ddb665de41df9d3e851a24ac22f, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f0d3291554a62457f9dd27a793e2c3cb, type: 2}
+  m_sharedMaterial: {fileID: -4069218022099365289, guid: f0d3291554a62457f9dd27a793e2c3cb,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
     rgba: 4293222714
-  m_fontColor: {r: 0.227451, g: 0.3803922, b: 0.8980393, a: 1}
+  m_fontColor: {r: 0, g: 0.039215688, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -93,7 +94,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
+  m_fontSize: 54
   m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 0
@@ -101,7 +102,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0

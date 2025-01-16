@@ -132,8 +132,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 17
-  m_fontSizeBase: 17
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -268,8 +268,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 17
-  m_fontSizeBase: 17
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -420,10 +420,10 @@ RectTransform:
   m_Father: {fileID: 280157625297107278}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -16}
-  m_SizeDelta: {x: 0, y: -32}
+  m_AnchoredPosition: {x: 0, y: -75}
+  m_SizeDelta: {x: 0, y: 85.58301}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5759955952601265394
 CanvasRenderer:
@@ -520,7 +520,7 @@ MonoBehaviour:
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 0
   m_RegexValue: 
-  m_GlobalPointSize: 14
+  m_GlobalPointSize: 22
   m_CharacterLimit: 0
   m_OnEndEdit:
     m_PersistentCalls:
@@ -651,7 +651,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adb30198aa32dd140b5750692dd48104, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 10
+  radius: 15
   image: {fileID: 7384096730573709402}
 --- !u!114 &850999852648244603
 MonoBehaviour:
@@ -701,10 +701,10 @@ RectTransform:
   m_Father: {fileID: 280157625297107278}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -16}
-  m_SizeDelta: {x: 50, y: -36}
+  m_AnchoredPosition: {x: 0, y: -75}
+  m_SizeDelta: {x: 51.504, y: 81.08099}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &8069610596524786479
 MonoBehaviour:
@@ -866,21 +866,9 @@ PrefabInstance:
       value: Name der Fachkraft
       objectReference: {fileID: 0}
     - target: {fileID: 4208087563557938629, guid: 95ec3754ca5834ccda2cfb936716d001, type: 3}
-      propertyPath: m_fontSize
-      value: 18
-      objectReference: {fileID: 0}
-    - target: {fileID: 4208087563557938629, guid: 95ec3754ca5834ccda2cfb936716d001, type: 3}
-      propertyPath: m_fontAsset
-      value: 
-      objectReference: {fileID: 11400000, guid: 32d291b6d220646d5ab02d153492f023, type: 2}
-    - target: {fileID: 4208087563557938629, guid: 95ec3754ca5834ccda2cfb936716d001, type: 3}
       propertyPath: m_fontSizeBase
-      value: 18
+      value: 22
       objectReference: {fileID: 0}
-    - target: {fileID: 4208087563557938629, guid: 95ec3754ca5834ccda2cfb936716d001, type: 3}
-      propertyPath: m_sharedMaterial
-      value: 
-      objectReference: {fileID: -719729612104614351, guid: 32d291b6d220646d5ab02d153492f023, type: 2}
     - target: {fileID: 4208087563557938631, guid: 95ec3754ca5834ccda2cfb936716d001, type: 3}
       propertyPath: m_Name
       value: InputLabelCaption
@@ -1039,11 +1027,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8524424544509167813, guid: 8cd0dd7becfbc4bc2b826db6fafd907e, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 20
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: -8524424544509167813, guid: 8cd0dd7becfbc4bc2b826db6fafd907e, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 20
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: -8524424544509167813, guid: 8cd0dd7becfbc4bc2b826db6fafd907e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1075,7 +1063,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8524424544509167813, guid: 8cd0dd7becfbc4bc2b826db6fafd907e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -10
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: -8524424544509167813, guid: 8cd0dd7becfbc4bc2b826db6fafd907e, type: 3}
       propertyPath: m_AnchoredPosition.y

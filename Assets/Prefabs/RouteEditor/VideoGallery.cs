@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using static SocketsAPI;
 
 public class VideoGallery : MonoBehaviour
 {
@@ -81,10 +80,16 @@ public class VideoGallery : MonoBehaviour
     {        
         double startTime = (currentPOI.Timestamp - POIStart.Timestamp) / 1000;
         double endTime = (nextPOI.Timestamp - POIStart.Timestamp) / 1000;
+        double duration = endTime - startTime;
 
         if (currentPOI.TimeInVideo != null)
         {
             startTime = (double)currentPOI.TimeInVideo;
+            endTime = startTime + duration;
+        }
+
+        if(nextPOI.TimeInVideo != null)
+        {
             endTime = (double)nextPOI.TimeInVideo;
         }
 

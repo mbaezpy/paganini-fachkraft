@@ -152,6 +152,22 @@ MonoBehaviour:
   ButtonObject: {fileID: 350926218137585314}
   ButtonLabel: {fileID: 7630478117785903915}
   BusyStatus: {fileID: 9124335300331524775}
+  PressedEffect: 1
+  BusyOnClicked: 0
+  PressedObject: {fileID: 9119487965066999602}
+  NormalObject: {fileID: 9119487965066999602}
+  ToggleObject: {fileID: 0}
+  FontPressedEffect: 0
+  FontPressedObject: {fileID: 0}
+  IconFillColorPressed: {fileID: 0}
+  FontPressedColor: {r: 1, g: 1, b: 1, a: 1}
+  VibrateOnPressed: 0
+  BackgroundDisableColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  OutlineDisableColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  FontDisableColor: {r: 1, g: 1, b: 1, a: 1}
+  OnProperClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &3546786330256019482
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,7 +780,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1326111874365710761, guid: fff91d0e3f3c34ac580d01fb282e75d1, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 102.634995
       objectReference: {fileID: 0}
     - target: {fileID: 1326111874365710761, guid: fff91d0e3f3c34ac580d01fb282e75d1, type: 3}
       propertyPath: m_AnchoredPosition.y
