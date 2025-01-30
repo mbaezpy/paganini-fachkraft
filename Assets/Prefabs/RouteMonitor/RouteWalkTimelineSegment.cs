@@ -82,6 +82,13 @@ public class RouteWalkTimelineSegment : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        try{
+
+        // if (adaptDestPOI == null)
+        // {
+        //     int siblingIndex = transform.GetSiblingIndex();
+        //     Debug.Log($"Update --- adaptDestPOI is null at {gameObject.name} (Sibling Index: {siblingIndex})");
+        // }
 
         if (AppState.MonitoringView.ShowPracticeModeInTimeline != ShowPracticeModeInTimeline)
         {
@@ -94,11 +101,16 @@ public class RouteWalkTimelineSegment : MonoBehaviour
             UpdateAdaptationView();
         }
         // The mute also affects also the previous segment (not selected), so we do this here
-        else if (AppState.MonitoringView.UpdatedModePOI != null && AppState.MonitoringView.UpdatedModePOI.Id == adaptDestPOI.Id)
+        else if (AppState.MonitoringView.UpdatedModePOI != null && adaptDestPOI != null && AppState.MonitoringView.UpdatedModePOI.Id == adaptDestPOI.Id)
         {
             UpdateAdaptationView();
             AppState.MonitoringView.UpdatedModePOI = null;
         }
+        } catch (Exception e){
+            Debug.LogError(e);
+        }
+
+
     }
 
     public void SelectSegment()
@@ -238,6 +250,11 @@ public class RouteWalkTimelineSegment : MonoBehaviour
         adaptSegLog = adaptationLog;
         adaptDestPOI = destPOI;
         adaptSegHide = false;
+
+        Debug.Log("RenderSegAdaptation: " + adaptationLog + " - destPOI" + destPOI);
+        if (destPOI == null){
+            Debug.Log("destPOI is null!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
 
         RenderPracticedSegAdaptation(adaptationLog);
 

@@ -28,6 +28,7 @@ public class RouteEditorController : MonoBehaviour
         SharedData.OnDataDownloaded += RouteSharedData_OnDataDownloaded;
         SharedData.OnDataPartiallyDownloaded += RouteSharedData_OnDataPartiallyDownloaded;
         SharedData.OnDataUploaded += SharedData_OnDataUploaded;
+        SharedData.CurrentPOI = null;
 
         SharedData.DownloadRouteDefinition();        
     }

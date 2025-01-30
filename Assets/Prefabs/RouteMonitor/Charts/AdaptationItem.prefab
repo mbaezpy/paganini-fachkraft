@@ -632,6 +632,22 @@ MonoBehaviour:
   ButtonObject: {fileID: 1106033433541027229}
   ButtonLabel: {fileID: 7179059296687091804}
   BusyStatus: {fileID: 1361437855306584282}
+  PressedEffect: 1
+  BusyOnClicked: 0
+  PressedObject: {fileID: 6752973722817320243}
+  NormalObject: {fileID: 6752973722817320243}
+  ToggleObject: {fileID: 0}
+  FontPressedEffect: 0
+  FontPressedObject: {fileID: 0}
+  IconFillColorPressed: {fileID: 0}
+  FontPressedColor: {r: 1, g: 1, b: 1, a: 1}
+  VibrateOnPressed: 0
+  BackgroundDisableColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  OutlineDisableColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  FontDisableColor: {r: 1, g: 1, b: 1, a: 1}
+  OnProperClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &7407942966396537448
 MonoBehaviour:
   m_ObjectHideFlags: 0

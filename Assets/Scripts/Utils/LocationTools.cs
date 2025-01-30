@@ -309,24 +309,30 @@ namespace LocationTools
 
                 currentCluster.PhotoFilenames.Add(new Pathpoint.PhotoMetaData(currentCluster.Timestamp, currentCluster.PhotoFilename));
 
+                // we don't cluster start and the destination, as they are associated to a specific picture via the interface
+                if (currentCluster.POIType != Pathpoint.POIsType.WayStart && currentCluster.POIType != Pathpoint.POIsType.WayDestination) {
 
-                // Look for other points within the distance threshold in the window
-                for (int  i = currentClusterStart + 1; i < points.Count; i++)
-                {
-                    Pathpoint candidatePoint = points[i];
-                    double distance = GPSUtils.HaversineDistance(currentCluster, candidatePoint);
-
-                    
-
-                    if (distance <= distanceThreshold)
+                    // Look for other points within the distance threshold in the window
+                    for (int  i = currentClusterStart + 1; i < points.Count; i++)
                     {
-                        // Add the candidate point to the current cluster
-                        currentCluster.PhotoFilenames.Add(new Pathpoint.PhotoMetaData(candidatePoint.Timestamp, candidatePoint.PhotoFilename));
-                        currentClusterStart++;
-                    }
-                    else
-                    {
-                        break;
+                        Pathpoint candidatePoint = points[i];
+                        // we don't cluster the destination, that's a separate point
+                        if (candidatePoint.POIType == Pathpoint.POIsType.WayDestination){
+                            break;
+                        }
+
+                        double distance = GPSUtils.HaversineDistance(currentCluster, candidatePoint);                    
+
+                        if (distance <= distanceThreshold)
+                        {
+                            // Add the candidate point to the current cluster
+                            currentCluster.PhotoFilenames.Add(new Pathpoint.PhotoMetaData(candidatePoint.Timestamp, candidatePoint.PhotoFilename));
+                            currentClusterStart++;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
                 currentClusterStart++;

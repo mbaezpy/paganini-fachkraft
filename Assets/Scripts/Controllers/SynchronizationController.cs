@@ -8,7 +8,7 @@ using System.Xml;
 using System.Xml.Serialization;
 
 using UnityEngine;
-
+using XCharts.Runtime;
 using static FTSCore;
 using static InternalDataModel;
 
@@ -17,12 +17,6 @@ using static InternalDataModel;
 public class SynchronizationController : MonoBehaviour
 {
 
-    //public GameObject SyncOverviewListContentPrefab;
-    //public GameObject SyncOverviewListContentAlternatePrefab;
-    //public GameObject SmartphoneFoundPrefab;
-    //public GameObject SmartphoneAskForConnectionText;
-    //public GameObject OverviewList;
-    //public GameObject SyncOverviewList;
     public RouteListPrefab SyncOverviewList;
     //public GameObject TextOverviewPanelAskForConnection;
     public GameObject LoadingIconAskForConnection;
@@ -30,6 +24,7 @@ public class SynchronizationController : MonoBehaviour
     public FileTransferServer FTS;
 
     [Header("Import UI Methods")]
+    public GameObject UI_Method_View;
     public GameObject UI_Method_Phone;
     public GameObject UI_Method_USBStick;
 
@@ -46,6 +41,10 @@ public class SynchronizationController : MonoBehaviour
     public GameObject UI_Overwrite;
     public GameObject UI_PanelError;
     public GameObject UI_PanelDenied;
+
+    [Header("Sync UI Elements")]
+    public GameObject UI_PairingViewOverlay;
+    public SyncPairViz  PairingViz;
 
     public TMPro.TMP_Text TextLog;
 
@@ -152,13 +151,11 @@ public class SynchronizationController : MonoBehaviour
     /// </summary>
     public void InitSyncUI()
     {
-        DisplayScreenPanel(UI_PanelStart);
+        // DisplayScreenPanel(UI_PanelStart);
 
-//        TextOverviewPanelAskForConnection.GetComponent<TMP_Text>().text = @"Verbindung wird aufgebaut ...
 
-//Bestätige die Synchronisierung auf dem Smartphone.";
-
-        LoadingIconAskForConnection.SetActive(true);
+        // LoadingIconAskForConnection.SetActive(true);
+        RenderImportMethodPhone();
 
         FileListToSyncronize = null;
         FileListProcessed = null;
@@ -173,8 +170,8 @@ public class SynchronizationController : MonoBehaviour
         // We prevent the screen from dimming out while the process is active        
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
-        SyncState.Instance.ClearValues();
-        SyncState.Instance.TabletName = $"{AppState.CurrentSocialWorker.Data.Firstname} {AppState.CurrentSocialWorker.Data.Surname}";
+        // SyncState.Instance.ClearValues();
+        // SyncState.Instance.TabletName = $"{AppState.CurrentSocialWorker.Data.Firstname} {AppState.CurrentSocialWorker.Data.Surname}";
 
     }
 
@@ -187,6 +184,7 @@ public class SynchronizationController : MonoBehaviour
         string downloadPath = FileManagement.persistentDataPath + "/" + FTS._downloadFolder;
 
         DisplayScreenPanel(UI_PanelFileTransferrunning);
+        PairingViz.RenderTransfer();
 
         List<DetailedWayExport> listOfWays = DetailedWayExportFiles.ParseDWEFile("waysForExport.xml", downloadPath);
 
@@ -250,6 +248,8 @@ public class SynchronizationController : MonoBehaviour
         //Directory.Delete(FileManagement.persistentDataPath + "/" + currentWayFolderName, true);
 
         RequestSelectedERW();
+        DisplayScreenPanel(UI_PanelFileTransferrunning);
+        PairingViz.RenderPairingAccepted();
     }
 
     /// <summary>
@@ -258,6 +258,9 @@ public class SynchronizationController : MonoBehaviour
     public void SearchSmartphone()
     {
         FTS.gameObject.SetActive(true);
+        DisplayScreenPanel(UI_PanelSearch);
+        PairingViz.RenderSearching();
+        
     }
 
     /// <summary>
@@ -278,6 +281,9 @@ public class SynchronizationController : MonoBehaviour
         // the current device
         lastHeartbeat = System.DateTime.Now;
         StartCoroutine(CheckDeviceConnection());
+
+        string[] comp = currentDeviceName.Split(',');
+        PairingViz.RenderPairingToPhone(comp[0]);
     }
 
     /// <summary>
@@ -321,16 +327,35 @@ public class SynchronizationController : MonoBehaviour
     }
 
     /// <summary>
-    /// Renders the view corresponding to the s
+    /// Renders the USB import method view
     /// </summary>
     public void RenderImportMethodUSB()
     {
-        UI_Method_USBStick.SetActive(true);
-        UI_Method_Phone.SetActive(false);
+        RenderMainView(UI_Method_USBStick);
     }
+
+    /// <summary>
+    /// Renders the Phone import method view
+    /// </summary>
     public void RenderImportMethodPhone() {
-        UI_Method_USBStick.SetActive(false);
-        UI_Method_Phone.SetActive(true);
+        RenderMainView(UI_Method_Phone);
+        DisplayScreenPanel(UI_PanelStart);
+        PairingViz.RenderStandBy();
+    }
+
+    public void RenderImportMethodChoice(){
+        RenderMainView(UI_Method_View);
+    }
+
+    /// <summary>
+    /// Renders the corresponding main view
+    /// </summary>
+    /// <param name="view"></param>
+    public void RenderMainView(GameObject view)
+    {
+        UI_Method_View.SetActive(UI_Method_View == view);
+        UI_Method_Phone.SetActive(UI_Method_Phone == view);
+        UI_Method_USBStick.SetActive(UI_Method_USBStick == view);
     }
 
     /// <summary>
@@ -376,6 +401,13 @@ public class SynchronizationController : MonoBehaviour
         UI_Overwrite.SetActive(UI_Overwrite == panel);
         UI_PanelError.SetActive(UI_PanelError == panel);
         UI_PanelDenied.SetActive(UI_PanelDenied == panel);
+
+        if (panel != UI_PanelEnd && panel != UI_SyncOverview){
+            UI_PairingViewOverlay.SetActive(true);
+        }
+        else {
+            UI_PairingViewOverlay.SetActive(false);
+        }
     }
 
 
@@ -390,6 +422,8 @@ public class SynchronizationController : MonoBehaviour
     /// as defined by the previously downloaded ERW manifest.xml file.
     /// Once the list is prepared, it proceeds to request the first file.
     /// </summary>
+    /// <param name="sourceFolder">The folder where the ERW files are stored</param>
+    /// <param name="mobileSync">Whether the synchronisation is being done via mobile phone</param>
     private void PrepareFilesToDownload(string sourceFolder, bool mobileSync = true)
     {
 
@@ -753,6 +787,7 @@ public class SynchronizationController : MonoBehaviour
             catch(Exception e)
             {
                 DisplayScreenPanel(UI_PanelError);
+                PairingViz.RenderError();
                 LogError("Error processing downloaded data: " + e.Message);
             }
                        
@@ -811,10 +846,9 @@ public class SynchronizationController : MonoBehaviour
             //TextOverviewPanelAskForConnection.GetComponent<TMP_Text>().text = "Die Geräte sind verbunden.";
             //LoadingIconAskForConnection.SetActive(false);
             DisplayScreenPanel(UI_PanelRouteReading);
-
+            PairingViz.RenderPairingAccepted();
 
             CurrentStatus = SyncStatus.WAIT_ERW_LIST;
-
         }
         else if (fileUpload.GetName().Equals("CONNECTIONDENIED"))
         {
@@ -826,6 +860,7 @@ public class SynchronizationController : MonoBehaviour
                 LogError($"CONNECTIONALLOWED: Process status is {CurrentStatus.ToString()} when WAIT_CONNECT_RESPONSE was expected ");
             }
             DisplayScreenPanel(UI_PanelDenied);
+            PairingViz.RenderError();
 
             CurrentStatus = SyncStatus.CANCEL; // DENIED
             ResetOrDisposeProcessProtocol();
@@ -841,6 +876,7 @@ public class SynchronizationController : MonoBehaviour
                 LogError($"CONNECTIONALLOWED: Process status is {CurrentStatus.ToString()} when status WAIT_ERW_LIST to DOWNLOAD was expected ");
             }
             DisplayScreenPanel(UI_PanelDenied);
+            PairingViz.RenderError();
 
             CurrentStatus = SyncStatus.CANCEL; // DENIED
             ResetOrDisposeProcessProtocol();
@@ -889,8 +925,8 @@ public class SynchronizationController : MonoBehaviour
                 //SmartphoneAskForConnectionText.GetComponent<TMP_Text>().text = comp[0];
 
                 currentDeviceName = list[0];
-
-                SyncState.Instance.PhoneName = comp[0];
+                PairingViz.RenderFoundPhone(comp[0]);
+                //SyncState.Instance.PhoneName = comp[0];
 
                 DisplayScreenPanel(UI_PanelFound);
                
@@ -1101,6 +1137,7 @@ public class SynchronizationController : MonoBehaviour
             LogProcess($"Device {currentDeviceName} is disconnected.");
 
             DisplayScreenPanel(UI_PanelError);
+            PairingViz.RenderError();
 
             ResetOrDisposeProcessProtocol();
         }

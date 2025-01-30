@@ -7,21 +7,38 @@ using Unity.VisualScripting;
 public class RouteMonitorController : MonoBehaviour
 {
     [Header("Main views")]
+    public GameObject IntroMainView;
+    public GameObject DashboardView;
+    public PIMPublish PublishMainView;
+    
+
+    [Header("Sub views")]
     public RouteWalkOverview OverviewView;
     public RouteWalkTimeline TimelineView;
     public RouteWalkOnboarding OnboardingView;
     public RouteWalkMap MapView;
-    public PIMPublish PublishView;
+    
     public GameObject LoadingView;
 
     [Header("Components")]
     public ToggleGroup MenuToggle;
-    public TMPro.TMP_Text HeaderText;
+    //public TMPro.TMP_Text HeaderText;
 
     public UnityEvent OnWayDefinitionUploaded;
 
     private RouteSharedData SharedData;
     private RouteWalkSharedData WalkSharedData;
+
+    void Awake()
+    {
+        // make sure all views are active, so they can be preloaded
+        DashboardView.SetActive(true);
+        TimelineView.gameObject.SetActive(true);
+        OverviewView.gameObject.SetActive(true);
+
+        // default shown view
+        IntroMainView.SetActive(true);
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -34,7 +51,7 @@ public class RouteMonitorController : MonoBehaviour
         WalkSharedData.OnDataDownloaded += WalkSharedData_OnDataDownloaded;
 
         SharedData.DownloadRouteDefinition();
-        HeaderText.text = AppState.CurrentRoute.Name;
+        //HeaderText.text = AppState.CurrentRoute.Name;
 
         HideAllButThisView(OnboardingView.gameObject);
 
@@ -88,8 +105,8 @@ public class RouteMonitorController : MonoBehaviour
     {
         if (WalkSharedData.ArePIMChangesToUpload())
         {
-            HideAllButThisView(PublishView.gameObject);
-            PublishView.LoadView();
+            HideAllButThisView(PublishMainView.gameObject);
+            PublishMainView.LoadView();
         }
         else
         {
@@ -181,7 +198,7 @@ public class RouteMonitorController : MonoBehaviour
         OnboardingView.gameObject.SetActive(OnboardingView.gameObject == view);
         OverviewView.gameObject.SetActive(OverviewView.gameObject == view);
         TimelineView.gameObject.SetActive(TimelineView.gameObject == view);
-        PublishView.gameObject.SetActive(PublishView.gameObject == view);
+        PublishMainView.gameObject.SetActive(PublishMainView.gameObject == view);
         MapView.gameObject.SetActive(MapView.gameObject == view);
         LoadingView.SetActive(LoadingView == view);
         

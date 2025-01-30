@@ -28,16 +28,16 @@ public class PIMPublish : MonoBehaviour
 
     void Awake()
     {
-
+        WalkSharedData = RouteWalkSharedData.Instance;        
+        WalkSharedData.OnDataUploaded += WalkSharedData_OnDataUploaded;
+        WalkSharedData.OnDataUploadError += WalkSharedData_OnDataUploadError;
     }
 
 
     // Start is called before the first frame update
     void Start()
     {
-        WalkSharedData = RouteWalkSharedData.Instance;        
-        WalkSharedData.OnDataUploaded += WalkSharedData_OnDataUploaded;
-        WalkSharedData.OnDataUploadError += WalkSharedData_OnDataUploadError;
+
     }
 
 

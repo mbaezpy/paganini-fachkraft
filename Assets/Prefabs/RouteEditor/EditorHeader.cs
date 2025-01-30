@@ -45,6 +45,9 @@ public class EditorHeader : MonoBehaviour
         }
 
         HeaderText.text = route.Name;
+
+        if (StatusIconGroup == null) 
+            return;
         
         string status = "";
         if(route.Status == Route.RouteStatus.New){
